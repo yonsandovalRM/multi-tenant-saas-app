@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Tenant } from './tenant.schema';
 import { Model } from 'mongoose';
-import { CreateTenantDto } from './tenants/dto/create-tenant.dto';
+import { CreateTenantDto } from './dto/create-tenant.dto';
 
 @Injectable()
 export class TenantService {

@@ -1,7 +1,7 @@
 import { Connection } from 'mongoose';
 import { PROVIDER } from '../constants/providers';
 import { Company, CompanySchema } from '../companies/entities/company.entity';
-import { Tenant, TenantSchema } from '../tenant.schema';
+import { Tenant, TenantSchema } from '../tenants/tenant.schema';
 import { Scope } from '@nestjs/common';
 
 export const TenantModels = {

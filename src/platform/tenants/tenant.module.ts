@@ -3,7 +3,7 @@ import { TenantService } from './tenant.service';
 import { TenantController } from './tenant.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Tenant, TenantSchema } from './tenant.schema';
-import { TenantConnectionProvider } from './providers/tenant-connection.provider';
+import { TenantConnectionProvider } from '../providers/tenant-connection.provider';
 
 @Global()
 @Module({
