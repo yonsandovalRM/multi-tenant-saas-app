@@ -1,11 +1,18 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongooseModuleAsyncOptions } from './tenants/config/mongoose.config';
-import { CompaniesModule } from './companies/companies.module';
+import { CompaniesModule } from './tenants/companies/companies.module';
 import { TenantModule } from './tenants/tenant.module';
+import { ClsModule } from 'nestjs-cls';
+import { TenantMiddleware } from './tenants/middlewares/tenant.middleware';
 
 @Module({
   imports: [
@@ -14,6 +21,10 @@ import { TenantModule } from './tenants/tenant.module';
       envFilePath: '.env',
       cache: true,
     }),
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+    }),
     MongooseModule.forRootAsync(mongooseModuleAsyncOptions),
     CompaniesModule,
     TenantModule,
@@ -21,4 +32,11 @@ import { TenantModule } from './tenants/tenant.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(TenantMiddleware)
+      .exclude({ path: 'core/(.*)', method: RequestMethod.ALL })
+      .forRoutes('*');
+  }
+}

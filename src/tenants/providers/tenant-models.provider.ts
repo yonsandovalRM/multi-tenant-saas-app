@@ -1,14 +1,13 @@
 import { Connection } from 'mongoose';
 import { PROVIDER } from '../constants/providers';
-import {
-  Company,
-  CompanySchema,
-} from '../../companies/entities/company.entity';
+import { Company, CompanySchema } from '../companies/entities/company.entity';
 import { Tenant, TenantSchema } from '../tenant.schema';
+import { Scope } from '@nestjs/common';
 
 export const TenantModels = {
   productModel: {
     provide: PROVIDER.COMPANY_MODEL,
+    scope: Scope.REQUEST,
     useFactory: async (tenantConnection: Connection) => {
       return tenantConnection.model(Company.name, CompanySchema);
     },
@@ -17,6 +16,7 @@ export const TenantModels = {
 
   tenantModel: {
     provide: PROVIDER.TENANT_MODEL,
+    scope: Scope.REQUEST,
     useFactory: async (tenantConnection: Connection) => {
       return tenantConnection.model(Tenant.name, TenantSchema);
     },

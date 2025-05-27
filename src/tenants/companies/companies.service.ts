@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
-import { PROVIDER } from '../tenants/constants/providers';
+import { PROVIDER } from '../constants/providers';
 import { Model } from 'mongoose';
 import { Company } from './entities/company.entity';
 

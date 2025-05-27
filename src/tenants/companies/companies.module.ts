@@ -1,8 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { CompaniesController } from './companies.controller';
-import { TenantsMiddleware } from 'src/tenants/middlewares/tenant.middleware';
-import { TenantModels } from 'src/tenants/providers/tenant-models.provider';
+import { TenantMiddleware } from '../middlewares/tenant.middleware';
+import { TenantModels } from '../providers/tenant-models.provider';
 
 @Module({
   imports: [],
@@ -15,8 +15,6 @@ import { TenantModels } from 'src/tenants/providers/tenant-models.provider';
 })
 export class CompaniesModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TenantsMiddleware).forRoutes(CompaniesController);
-
-    //Use the wildcard character (*) to apply the middleware to all routes in the module.
+    consumer.apply(TenantMiddleware).forRoutes(CompaniesController);
   }
 }

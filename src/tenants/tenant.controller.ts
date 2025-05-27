@@ -1,25 +1,18 @@
-import {
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { TenantService } from './tenant.service';
+import { CreateTenantDto } from './tenants/dto/create-tenant.dto';
 
-@Controller('tenant')
+@Controller('core/tenants')
 export class TenantController {
   constructor(private readonly tenantService: TenantService) {}
 
   @Get()
   async getTenants() {
-    try {
-      return await this.tenantService.getTenantBydId('ABC');
-    } catch (error) {
-      throw new HttpException(
-        error.message,
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    return await this.tenantService.getAllTenants();
+  }
+
+  @Post()
+  async createTenant(@Body() createTenantDto: CreateTenantDto) {
+    return await this.tenantService.createTenant(createTenantDto);
   }
 }

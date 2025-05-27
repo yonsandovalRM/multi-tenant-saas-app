@@ -1,18 +1,15 @@
-import { InternalServerErrorException, Scope } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { ClsService } from 'nestjs-cls';
 import { PROVIDER } from '../constants/providers';
+import { Scope } from '@nestjs/common';
 
 export const TenantConnectionProvider = {
   provide: PROVIDER.TENANT_CONNECTION,
-  useFactory: async (request, connection: Connection) => {
-    if (!request.tenant_id) {
-      throw new InternalServerErrorException(
-        'Make sure to use the TenantsMiddleware',
-      );
-    }
-    return connection.useDb(`tenant_${request.tenant_id}`);
+  scope: Scope.REQUEST,
+  useFactory: async (cls: ClsService, connection: Connection) => {
+    const tenantId = cls.get('tenantId');
+    return connection.useDb(`tenant_${tenantId}`);
   },
-  inject: [REQUEST, getConnectionToken()],
+  inject: [ClsService, getConnectionToken()],
 };

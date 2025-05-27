@@ -3,11 +3,14 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Tenant extends Document {
-  @Prop({ required: true })
-  tenant_id: string;
+  @Prop({ required: true, unique: true })
+  tenantId: string;
 
   @Prop({ required: true })
-  tenant_name: string;
+  name: string;
+
+  @Prop({ required: true })
+  email: string;
 }
 
 export const TenantSchema = SchemaFactory.createForClass(Tenant);
