@@ -14,6 +14,8 @@ import { TenantModule } from './platform/tenants/tenant.module';
 import { ClsModule } from 'nestjs-cls';
 import { TenantMiddleware } from './platform/tenants/middleware/tenant.middleware';
 import { PlansModule } from './core/plans/plans.module';
+import { UsersModule } from './core/users/users.module';
+import { AuthModule } from './core/auth/auth.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { PlansModule } from './core/plans/plans.module';
     CompaniesModule,
     TenantModule,
     PlansModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

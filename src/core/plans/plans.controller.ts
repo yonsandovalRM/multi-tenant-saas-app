@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { PlansService } from './plans.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('core/plans')
 export class PlansController {
@@ -21,6 +23,7 @@ export class PlansController {
   }
 
   @Get()
+  @UseGuards(AuthGuard('jwt'))
   findAll() {
     return this.plansService.findAll();
   }
