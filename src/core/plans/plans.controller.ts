@@ -7,11 +7,18 @@ import {
   Param,
   Delete,
   UseGuards,
+  SetMetadata,
 } from '@nestjs/common';
 import { PlansService } from './plans.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import { User } from '../users/entities/user.entity';
+import { UserRoleGuard } from '../auth/guards/user-role.guard';
+import { RoleProtected } from '../auth/decorators/role-protected.decorator';
+import { ValidRoles } from '../auth/interfaces/valid-roles';
+import { Auth } from '../auth/decorators/auth.decorator';
 
 @Controller('core/plans')
 export class PlansController {
@@ -23,8 +30,8 @@ export class PlansController {
   }
 
   @Get()
-  @UseGuards(AuthGuard('jwt'))
-  findAll() {
+  @Auth(ValidRoles.admin)
+  findAll(@GetUser() user: User) {
     return this.plansService.findAll();
   }
 

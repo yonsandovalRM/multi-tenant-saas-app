@@ -26,6 +26,15 @@ export class UsersService {
     return this.userModel.findOne({ email }).exec();
   }
 
+  async findUserById(id: string): Promise<Partial<User> | null> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) {
+      return null;
+    }
+    const { password, ...result } = user.toObject();
+    return result;
+  }
+
   async findOrCreateByGooglePayload(payload: any) {
     const user = await this.findUserByEmail(payload.email);
     if (user) {

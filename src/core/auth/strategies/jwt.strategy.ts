@@ -1,13 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { ConfigService } from '@nestjs/config';
+import { UsersService } from 'src/core/users/users.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly authService: AuthService,
+    private readonly userService: UsersService,
     configService: ConfigService,
   ) {
     super({
@@ -17,6 +19,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<any> {
-    return { userId: payload.sub };
+    const { sub } = payload;
+    const user = await this.userService.findUserById(sub);
+    if (!user) {
+      throw new UnauthorizedException('Token not valid');
+    }
+    if (!user.isActive) {
+      throw new UnauthorizedException('User is not active, contact admin');
+    }
+    return user;
   }
 }
