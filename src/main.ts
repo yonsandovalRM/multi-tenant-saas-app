@@ -11,7 +11,7 @@ async function bootstrap() {
   app.enableCors({
     origin: true,
     credentials: true,
-    exposedHeaders: ['x-tenant-id'],
+    exposedHeaders: ['X-TENANT-ID'],
   });
 
   // Configuración de Swagger con soporte para x-tenant-id
@@ -54,7 +54,7 @@ async function bootstrap() {
     .addApiKey(
       {
         type: 'apiKey',
-        name: 'x-tenant-id',
+        name: 'X-TENANT-ID',
         in: 'header',
         description: 'ID del tenant para acceso multi-tenant',
       },
@@ -129,7 +129,7 @@ async function bootstrap() {
     📖 API Documentation: http://localhost:${port}/api
     🌐 Health Check: http://localhost:${port}/api/v1/health
     
-    💡 Remember to include the 'x-tenant-id' header in your requests!
+    💡 Remember to include the 'X-TENANT-ID' header in your requests!
   `);
 }
 
