@@ -1,36 +1,109 @@
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsEmail,
   IsNotEmpty,
+  IsNumber,
   IsObject,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 
-export class ConfigsDto {
-  @IsString()
-  @IsNotEmpty()
-  currency: string;
+// DTO para BusinessDay
+export class BusinessDayDto {
+  @IsBoolean()
+  @IsOptional()
+  isOpen?: boolean;
 
   @IsString()
-  @IsNotEmpty()
-  timezone: string;
+  @IsOptional()
+  start?: string;
 
   @IsString()
-  @IsNotEmpty()
-  language: string;
+  @IsOptional()
+  end?: string;
+}
+
+// DTO para BusinessHours
+export class BusinessHoursDto {
+  @ValidateNested()
+  @Type(() => BusinessDayDto)
+  @IsOptional()
+  monday?: BusinessDayDto;
+
+  @ValidateNested()
+  @Type(() => BusinessDayDto)
+  @IsOptional()
+  tuesday?: BusinessDayDto;
+
+  @ValidateNested()
+  @Type(() => BusinessDayDto)
+  @IsOptional()
+  wednesday?: BusinessDayDto;
+
+  @ValidateNested()
+  @Type(() => BusinessDayDto)
+  @IsOptional()
+  thursday?: BusinessDayDto;
+
+  @ValidateNested()
+  @Type(() => BusinessDayDto)
+  @IsOptional()
+  friday?: BusinessDayDto;
+
+  @ValidateNested()
+  @Type(() => BusinessDayDto)
+  @IsOptional()
+  saturday?: BusinessDayDto;
+
+  @ValidateNested()
+  @Type(() => BusinessDayDto)
+  @IsOptional()
+  sunday?: BusinessDayDto;
+}
+
+// DTO para BusinessConfig
+export class BusinessConfigDto {
+  @IsString()
+  @IsOptional()
+  currency?: string;
 
   @IsString()
-  @IsNotEmpty()
-  decimals: string;
+  @IsOptional()
+  timezone?: string;
+
+  @IsString()
+  @IsOptional()
+  language?: string;
+
+  @IsNumber()
+  @IsOptional()
+  decimals?: number;
+}
+
+// DTO para BookingSettings
+export class BookingSettingsDto {
+  @IsNumber()
+  @IsOptional()
+  advancedBookingDays?: number;
+
+  @IsNumber()
+  @IsOptional()
+  cancellationHours?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  confirmationRequired?: boolean;
 }
 
 export class CreateCompanyDto {
   @IsString()
+  @IsNotEmpty()
   businessName: string;
 
   @IsString()
+  @IsNotEmpty()
   taxId: string;
 
   @IsEmail()
@@ -57,8 +130,18 @@ export class CreateCompanyDto {
   @IsOptional()
   website?: string;
 
-  @IsOptional()
   @ValidateNested()
-  @Type(() => ConfigsDto)
-  configs?: Record<string, string>;
+  @Type(() => BusinessConfigDto)
+  @IsOptional()
+  configs?: BusinessConfigDto;
+
+  @ValidateNested()
+  @Type(() => BusinessHoursDto)
+  @IsOptional()
+  businessHours?: BusinessHoursDto;
+
+  @ValidateNested()
+  @Type(() => BookingSettingsDto)
+  @IsOptional()
+  bookingSettings?: BookingSettingsDto;
 }

@@ -13,16 +13,22 @@ import { TenantMiddleware } from './core/tenants/middleware/tenant.middleware';
 
 // Importar esquemas
 import { CompanySchema } from './platform/companies/entities/company.entity';
-import { CompanyScheduleSchema } from './platform/company-schedule/entities/company-schedule.entity';
 
 // Importar módulos
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CompaniesModule } from './platform/companies/companies.module';
-import { CompanyScheduleModule } from './platform/company-schedule/company-schedule.module';
 import { PlansModule } from './core/plans/plans.module';
 import { UsersModule } from './core/users/users.module';
 import { AuthModule } from './core/auth/auth.module';
+import { ServicesModule } from './platform/services/services.module';
+import { BookingsModule } from './platform/bookings/bookings.module';
+import { ProfessionalScheduleModule } from './platform/professional-schedule/professional-schedule.module';
+import { UnavailableBlocksModule } from './platform/unavailable-blocks/unavailable-blocks.module';
+import { UnavailableBlockSchema } from './platform/unavailable-blocks/entities/unavailable-block.entity';
+import { ProfessionalScheduleSchema } from './platform/professional-schedule/entities/professional-schedule.entity';
+import { ServiceSchema } from './platform/services/entities/service.entity';
+import { BookingSchema } from './platform/bookings/entities/booking.entity';
 
 @Module({
   imports: [
@@ -45,15 +51,21 @@ import { AuthModule } from './core/auth/auth.module';
     MultitenantModule.forRoot({
       models: [
         { name: 'Company', schema: CompanySchema },
-        { name: 'CompanySchedule', schema: CompanyScheduleSchema },
+        { name: 'UnavailableBlock', schema: UnavailableBlockSchema },
+        { name: 'ProfessionalSchedule', schema: ProfessionalScheduleSchema },
+        { name: 'Service', schema: ServiceSchema },
+        { name: 'Booking', schema: BookingSchema },
         // Agregar más modelos aquí fácilmente
       ],
     }),
     CompaniesModule,
-    CompanyScheduleModule,
     PlansModule,
     UsersModule,
     AuthModule,
+    ServicesModule,
+    BookingsModule,
+    ProfessionalScheduleModule,
+    UnavailableBlocksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

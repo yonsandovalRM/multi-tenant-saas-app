@@ -1,6 +1,66 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+class BusinessDay {
+  @Prop({ required: true })
+  isOpen: boolean;
+
+  @Prop({ required: true })
+  start: string;
+
+  @Prop({ required: true })
+  end: string;
+}
+
+// Definir una clase para las horas comerciales
+class BusinessHours {
+  @Prop({ type: BusinessDay })
+  monday: BusinessDay;
+
+  @Prop({ type: BusinessDay })
+  tuesday: BusinessDay;
+
+  @Prop({ type: BusinessDay })
+  wednesday: BusinessDay;
+
+  @Prop({ type: BusinessDay })
+  thursday: BusinessDay;
+
+  @Prop({ type: BusinessDay })
+  friday: BusinessDay;
+
+  @Prop({ type: BusinessDay })
+  saturday: BusinessDay;
+
+  @Prop({ type: BusinessDay })
+  sunday: BusinessDay;
+}
+
+class BusinessConfig {
+  @Prop({ required: true })
+  currency: string;
+
+  @Prop({ required: true })
+  timezone: string;
+
+  @Prop({ required: true })
+  language: string;
+
+  @Prop({ required: true })
+  decimals: number;
+}
+
+class BookingSettings {
+  @Prop({ required: true })
+  advancedBookingDays: number;
+
+  @Prop({ required: true })
+  cancellationHours: number;
+
+  @Prop({ required: true })
+  confirmationRequired: boolean;
+}
+
 @Schema({ timestamps: true })
 export class Company extends Document {
   @Prop({ required: true, unique: true, index: true })
@@ -28,8 +88,8 @@ export class Company extends Document {
   website?: string;
 
   @Prop({
-    type: Map,
-    of: String,
+    type: BusinessConfig,
+    required: true,
     default: {
       currency: 'CLP',
       timezone: 'America/Santiago',
@@ -37,7 +97,33 @@ export class Company extends Document {
       decimals: 0,
     },
   })
-  configs: Map<string, string>;
+  configs: BusinessConfig;
+
+  @Prop({
+    type: BusinessHours,
+    required: true,
+    default: {
+      monday: { isOpen: true, start: '09:00', end: '18:00' },
+      tuesday: { isOpen: true, start: '09:00', end: '18:00' },
+      wednesday: { isOpen: true, start: '09:00', end: '18:00' },
+      thursday: { isOpen: true, start: '09:00', end: '18:00' },
+      friday: { isOpen: true, start: '09:00', end: '18:00' },
+      saturday: { isOpen: true, start: '09:00', end: '18:00' },
+      sunday: { isOpen: false, start: '09:00', end: '18:00' },
+    },
+  })
+  businessHours: BusinessHours;
+
+  @Prop({
+    type: BookingSettings,
+    required: true,
+    default: {
+      advancedBookingDays: 30,
+      cancellationHours: 24,
+      confirmationRequired: false,
+    },
+  })
+  bookingSettings: BookingSettings;
 
   @Prop()
   deleteAt?: Date;
