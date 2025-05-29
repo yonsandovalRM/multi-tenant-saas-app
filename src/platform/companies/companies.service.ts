@@ -1,35 +1,39 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
+import { InjectTenantModel } from '../multitenant/decorators/tenant-model.decorator';
+import { BaseTenantService } from '../multitenant/services/base-tenant.service';
+import { Company } from './entities/company.entity';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
-import { PROVIDER } from '../constants/providers';
-import { Model } from 'mongoose';
-import { Company } from './entities/company.entity';
 
 @Injectable()
-export class CompaniesService {
+export class CompaniesService extends BaseTenantService<Company> {
   constructor(
-    @Inject(PROVIDER.COMPANY_MODEL)
-    private companyModel: Model<Company>,
-  ) {}
-
-  async create(createCompanyDto: CreateCompanyDto) {
-    const company = new this.companyModel(createCompanyDto);
-    return company.save();
+    @InjectTenantModel('Company')
+    private readonly companyModel: Model<Company>,
+  ) {
+    super(companyModel);
   }
 
-  async findAll() {
-    return await this.companyModel.find().exec();
+  async createCompany(createCompanyDto: CreateCompanyDto): Promise<Company> {
+    // Lógica específica de negocio si es necesaria
+    const existingCompany = await this.findOne({
+      $or: [
+        { businessName: createCompanyDto.businessName },
+        { taxId: createCompanyDto.taxId },
+      ],
+    });
+
+    if (existingCompany) {
+      throw new ConflictException(
+        'Company with this name or taxId already exists',
+      );
+    }
+
+    return this.create(createCompanyDto);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} company`;
-  }
-
-  update(id: number, updateCompanyDto: UpdateCompanyDto) {
-    return `This action updates a #${id} company`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} company`;
+  async getActiveCompanies(): Promise<Company[]> {
+    return this.findAll({ deleteAt: { $exists: false } });
   }
 }

@@ -23,15 +23,15 @@ export class CompanyScheduleController {
     return this.companyScheduleService.create(createCompanyScheduleDto);
   }
 
-  @Get('company/:companyId')
+  /* @Get('company/:companyId')
   findAll(@Param('companyId') companyId: string) {
     return this.companyScheduleService.findAllByCompany(companyId);
-  }
+  } */
 
-  @Get(':id')
+  /* @Get(':id')
   findOne(@Param('id') id: string) {
     return this.companyScheduleService.findOne(id);
-  }
+  } */
 
   @Patch(':id')
   update(
