@@ -9,6 +9,7 @@ import { UpdateCompanyScheduleDto } from './dto/update-company-schedule.dto';
 import { PROVIDER } from '../constants/providers';
 import { Model, Types } from 'mongoose';
 import { CompanySchedule } from './entities/company-schedule.entity';
+import { BusinessException } from 'src/common/exceptions/business.exception';
 
 @Injectable()
 export class CompanyScheduleService {
@@ -155,7 +156,7 @@ export class CompanyScheduleService {
     const endTime = this.timeToMinutes(end);
 
     if (startTime >= endTime) {
-      throw new ConflictException(
+      throw new BusinessException(
         'The start time must be earlier than the end time',
       );
     }
