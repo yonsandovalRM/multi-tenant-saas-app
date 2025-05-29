@@ -4,10 +4,43 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true })
 export class Company extends Document {
   @Prop({ required: true })
-  name: string;
+  businessName: string;
 
   @Prop({ required: true })
-  description: string;
+  taxId: string;
+
+  @Prop()
+  email?: string;
+
+  @Prop()
+  phone?: string;
+
+  @Prop()
+  address?: string;
+
+  @Prop()
+  logo?: string;
+
+  @Prop()
+  cover?: string;
+
+  @Prop()
+  website?: string;
+
+  @Prop({
+    type: Map,
+    of: String,
+    default: {
+      currency: 'CLP',
+      timezone: 'America/Santiago',
+      language: 'es',
+      decimals: 0,
+    },
+  })
+  configs: Map<string, string>;
+
+  @Prop()
+  deleteAt?: Date;
 }
 
 export const CompanySchema = SchemaFactory.createForClass(Company);

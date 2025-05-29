@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { PROVIDER } from '../constants/providers';
@@ -12,7 +12,20 @@ export class CompaniesService {
     private companyModel: Model<Company>,
   ) {}
 
-  create(createCompanyDto: CreateCompanyDto) {
+  async create(createCompanyDto: CreateCompanyDto) {
+    const companyExists = await this.companyModel
+      .findOne({
+        $or: [
+          { businessName: createCompanyDto.businessName },
+          { taxId: createCompanyDto.taxId },
+        ],
+      })
+      .exec();
+
+    if (companyExists) {
+      throw new ConflictException('Company already exists');
+    }
+
     const company = new this.companyModel(createCompanyDto);
     return company.save();
   }
