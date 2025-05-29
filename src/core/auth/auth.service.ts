@@ -3,7 +3,6 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { GoogleProfile } from './interfaces/google-profile.interface';
 
 @Injectable()
 export class AuthService {
@@ -21,35 +20,62 @@ export class AuthService {
     return null;
   }
 
-  async validateGoogleProfile(profile: any): Promise<User | undefined | false> {
-    const email = profile.emails[0].value;
-    const user = await this.userService.findOrCreateByGooglePayload({
-      email,
-      ...profile,
-    });
-    if (!user) {
-      return false;
-    }
-    const { password, ...result } = user.toObject();
-    return result as User;
-  }
+  async login(user: any): Promise<{ accessToken: string; user: any }> {
+    const payload = {
+      sub: user._id,
+      email: user.email,
+      role: user.role,
+      isCoreUser: user.isCoreUser,
+      tenantId: user.tenantId,
+    };
 
-  async login(user: any): Promise<{ accessToken: string }> {
-    const payload = { sub: user._id };
     const accessToken = this.jwtService.sign(payload);
-    return { accessToken };
+
+    return {
+      accessToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        isCoreUser: user.isCoreUser,
+        tenantId: user.tenantId,
+      },
+    };
   }
 
-  async register(
+  // Registro para usuarios core (admin)
+  async registerCoreUser(
     email: string,
     password: string,
     name: string,
+    role: string = 'user',
   ): Promise<Partial<User>> {
-    /*  const existingUser = await this.userService.findUserByEmail(email);
-    if (existingUser) {
-      throw new ConflictException('User already exists');
-    } */
-    const user = await this.userService.createUser({ email, password, name });
+    const user = await this.userService.createCoreUser({
+      email,
+      password,
+      name,
+      role,
+    });
+    const { password: _, ...result } = user.toObject();
+    return result;
+  }
+
+  // Registro para usuarios de tenant
+  async registerTenantUser(
+    email: string,
+    password: string,
+    name: string,
+    tenantId: string,
+    role: string = 'user',
+  ): Promise<Partial<User>> {
+    const user = await this.userService.createTenantUser({
+      email,
+      password,
+      name,
+      tenantId,
+      role,
+    });
     const { password: _, ...result } = user.toObject();
     return result;
   }

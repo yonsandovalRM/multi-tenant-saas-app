@@ -11,13 +11,41 @@ export class UsersService {
     private readonly userModel: Model<User>,
   ) {}
 
-  async createUser({ email, password, name }) {
+  async createCoreUser({
+    email,
+    password,
+    name,
+    role = 'user',
+  }): Promise<User> {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new this.userModel({
       email,
       password: hashedPassword,
       name,
+      role,
       isActive: true,
+      isCoreUser: true,
+      tenantId: null,
+    });
+    return user.save();
+  }
+
+  async createTenantUser({
+    email,
+    password,
+    name,
+    tenantId,
+    role = 'user',
+  }): Promise<User> {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new this.userModel({
+      email,
+      password: hashedPassword,
+      name,
+      role,
+      isActive: true,
+      isCoreUser: false,
+      tenantId,
     });
     return user.save();
   }
@@ -26,26 +54,18 @@ export class UsersService {
     return this.userModel.findOne({ email }).exec();
   }
 
-  async findUserById(id: string): Promise<Partial<User> | null> {
-    const user = await this.userModel.findById(id).exec();
-    if (!user) {
-      return null;
-    }
-    const { password, ...result } = user.toObject();
-    return result;
+  async findUserById(id: string): Promise<User | null> {
+    return this.userModel.findById(id).exec();
   }
 
-  async findOrCreateByGooglePayload(payload: any) {
-    const user = await this.findUserByEmail(payload.email);
-    if (user) {
-      return user;
-    }
-    const newUser = new this.userModel({
-      email: payload.email,
-      name: payload.name,
-      password: '',
-      isActive: true,
-    });
-    return newUser.save();
+  async findTenantUsers(tenantId: string): Promise<User[]> {
+    return this.userModel
+      .find({ tenantId, isCoreUser: false })
+      .select('-password')
+      .exec();
+  }
+
+  async findCoreUsers(): Promise<User[]> {
+    return this.userModel.find({ isCoreUser: true }).select('-password').exec();
   }
 }

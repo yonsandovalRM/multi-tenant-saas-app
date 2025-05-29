@@ -12,19 +12,28 @@ export class TenantMiddleware implements NestMiddleware {
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
+    // Solo aplicar a rutas que no sean core/auth
+    if (req.path.startsWith('/api/v1/core/')) {
+      return next();
+    }
+
     // Check for X-TENANT-ID header
     const tenantId = req.headers['x-tenant-id']?.toString();
     if (!tenantId) {
-      throw new BadRequestException('X-TENANT-ID not provided');
+      throw new BadRequestException(
+        'X-TENANT-ID header is required for tenant routes',
+      );
     }
 
     // Validate that tenantId belongs to a valid tenant
-    const isTenantExist = await this.tenantService.getTenantById(tenantId);
-    if (!isTenantExist) {
+    const tenant = await this.tenantService.getTenantById(tenantId);
+    if (!tenant) {
       throw new NotFoundException('Tenant not found');
     }
 
+    // Set tenant context (will be validated again in guard)
     this.cls.set('tenantId', tenantId);
+    this.cls.set('tenant', tenant);
 
     next();
   }

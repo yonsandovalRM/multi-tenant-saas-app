@@ -1,6 +1,6 @@
 import { IsEmail, IsString, IsOptional } from 'class-validator';
 
-export class RegisterDto {
+export class TenantRegisterDto {
   @IsEmail()
   email: string;
 
@@ -9,6 +9,9 @@ export class RegisterDto {
 
   @IsString()
   name: string;
+
+  @IsString()
+  tenantId: string;
 
   @IsString()
   @IsOptional()
