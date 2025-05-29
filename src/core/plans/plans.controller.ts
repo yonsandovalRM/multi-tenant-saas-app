@@ -25,19 +25,19 @@ export class PlansController {
   constructor(private readonly plansService: PlansService) {}
 
   @Post()
+  @Auth(ValidRoles.admin)
   create(@Body() createPlanDto: CreatePlanDto) {
     return this.plansService.create(createPlanDto);
   }
 
   @Get()
-  @Auth(ValidRoles.admin)
-  findAll(@GetUser() user: User) {
+  findAll() {
     return this.plansService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.plansService.findOne(+id);
+    return this.plansService.findOne(id);
   }
 
   @Patch(':id')

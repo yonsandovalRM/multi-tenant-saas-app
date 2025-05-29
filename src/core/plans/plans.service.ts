@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
 import { Model } from 'mongoose';
@@ -12,7 +12,11 @@ export class PlansService {
     private readonly planModel: Model<Plan>,
   ) {}
 
-  create(createPlanDto: CreatePlanDto) {
+  async create(createPlanDto: CreatePlanDto) {
+    const plan = await this.planModel.findOne({ name: createPlanDto.name });
+    if (plan) {
+      throw new ConflictException('Plan already exists');
+    }
     const newPlan = new this.planModel(createPlanDto);
     return newPlan.save();
   }
@@ -21,8 +25,12 @@ export class PlansService {
     return await this.planModel.find().exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} plan`;
+  async findOne(id: string) {
+    const plan = await this.planModel.findById(id).exec();
+    if (!plan) {
+      return null;
+    }
+    return plan;
   }
 
   update(id: number, updatePlanDto: UpdatePlanDto) {
