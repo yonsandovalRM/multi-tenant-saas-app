@@ -201,4 +201,65 @@ export class ProfessionalScheduleService extends BaseTenantService<ProfessionalS
       }
     }
   }
+
+  private validateBusinessRules(schedule: any): void {
+    const days = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ];
+
+    days.forEach((day) => {
+      const daySchedule = schedule[day];
+      if (!daySchedule) return;
+
+      // Si está marcado como día laboral, debe tener configuración válida
+      if (daySchedule.isWorking) {
+        if (daySchedule.type === ScheduleType.CUSTOM_BLOCKS) {
+          if (!daySchedule.blocks || daySchedule.blocks.length === 0) {
+            throw new Error(
+              `Working day ${day} with CUSTOM_BLOCKS must have at least one time block`,
+            );
+          }
+        }
+      } else {
+        // Si no es día laboral, no debería tener bloques
+        if (daySchedule.blocks && daySchedule.blocks.length > 0) {
+          throw new Error(`Non-working day ${day} should not have time blocks`);
+        }
+      }
+    });
+  }
+
+  private validateMinimumServiceTime(blocks: any[], minDuration = 30): void {
+    blocks.forEach((block, index) => {
+      const duration =
+        this.timeToMinutes(block.end) - this.timeToMinutes(block.start);
+      if (duration < minDuration) {
+        throw new Error(
+          `Time block ${index + 1} is too short. Minimum duration is ${minDuration} minutes`,
+        );
+      }
+    });
+  }
+
+  private validateBusinessHours(blocks: any[]): void {
+    const BUSINESS_START = 6 * 60; // 6:00 AM
+    const BUSINESS_END = 22 * 60; // 10:00 PM
+
+    blocks.forEach((block, index) => {
+      const startMinutes = this.timeToMinutes(block.start);
+      const endMinutes = this.timeToMinutes(block.end);
+
+      if (startMinutes < BUSINESS_START || endMinutes > BUSINESS_END) {
+        throw new Error(
+          `Block ${index + 1} is outside business hours (6:00 AM - 10:00 PM)`,
+        );
+      }
+    });
+  }
 }
