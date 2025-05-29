@@ -13,19 +13,6 @@ export class CompaniesService {
   ) {}
 
   async create(createCompanyDto: CreateCompanyDto) {
-    const companyExists = await this.companyModel
-      .findOne({
-        $or: [
-          { businessName: createCompanyDto.businessName },
-          { taxId: createCompanyDto.taxId },
-        ],
-      })
-      .exec();
-
-    if (companyExists) {
-      throw new ConflictException('Company already exists');
-    }
-
     const company = new this.companyModel(createCompanyDto);
     return company.save();
   }

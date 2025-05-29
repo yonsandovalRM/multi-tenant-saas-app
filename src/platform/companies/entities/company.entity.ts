@@ -3,10 +3,10 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Company extends Document {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true, index: true })
   businessName: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true, index: true })
   taxId: string;
 
   @Prop()

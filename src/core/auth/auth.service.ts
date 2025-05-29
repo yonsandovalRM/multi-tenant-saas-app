@@ -45,10 +45,10 @@ export class AuthService {
     password: string,
     name: string,
   ): Promise<Partial<User>> {
-    const existingUser = await this.userService.findUserByEmail(email);
+    /*  const existingUser = await this.userService.findUserByEmail(email);
     if (existingUser) {
       throw new ConflictException('User already exists');
-    }
+    } */
     const user = await this.userService.createUser({ email, password, name });
     const { password: _, ...result } = user.toObject();
     return result;

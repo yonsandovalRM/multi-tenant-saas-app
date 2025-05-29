@@ -12,7 +12,7 @@ async function bootstrap() {
     }),
   );
   app.setGlobalPrefix('api/v1');
-  //app.useGlobalFilters(new MongooseErrorFilter());
+  app.useGlobalFilters(new MongooseErrorFilter());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
