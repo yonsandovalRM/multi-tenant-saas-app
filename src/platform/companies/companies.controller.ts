@@ -41,7 +41,7 @@ export class CompaniesController {
     @Body() updateCompanyDto: UpdateCompanyDto,
     @GetAuthContext() authContext: AuthContext,
   ) {
-    return this.companiesService.update(id, updateCompanyDto);
+    return this.companiesService.updateCompany(id, updateCompanyDto);
   }
 
   @Delete(':id')

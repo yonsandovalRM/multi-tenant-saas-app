@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { merge } from 'lodash';
 import { InjectTenantModel } from '../multitenant/decorators/tenant-model.decorator';
 import { BaseTenantService } from '../multitenant/services/base-tenant.service';
 import { Company } from './entities/company.entity';
@@ -35,5 +36,29 @@ export class CompaniesService extends BaseTenantService<Company> {
 
   async getActiveCompanies(): Promise<Company[]> {
     return this.findAll({ deleteAt: { $exists: false } });
+  }
+
+  // Override del método update con lodash merge
+  async updateCompany(
+    id: string,
+    updateCompanyDto: UpdateCompanyDto,
+  ): Promise<Company | null> {
+    // Obtener el documento actual
+    const currentCompany = await this.companyModel.findById(id);
+    if (!currentCompany) {
+      throw new Error('Company not found');
+    }
+
+    // Crear una copia del documento actual y hacer merge con los nuevos datos
+    const mergedData = merge({}, currentCompany.toObject(), updateCompanyDto);
+
+    // Actualizar el documento
+    const updatedCompany = await this.companyModel.findByIdAndUpdate(
+      id,
+      mergedData,
+      { new: true, runValidators: true },
+    );
+
+    return updatedCompany;
   }
 }
