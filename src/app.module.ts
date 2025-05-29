@@ -16,6 +16,7 @@ import { TenantMiddleware } from './platform/tenants/middleware/tenant.middlewar
 import { PlansModule } from './core/plans/plans.module';
 import { UsersModule } from './core/users/users.module';
 import { AuthModule } from './core/auth/auth.module';
+import { CompanyScheduleModule } from './platform/company-schedule/company-schedule.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AuthModule } from './core/auth/auth.module';
     PlansModule,
     UsersModule,
     AuthModule,
+    CompanyScheduleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
