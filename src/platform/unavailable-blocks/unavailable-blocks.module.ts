@@ -5,5 +5,6 @@ import { UnavailableBlocksController } from './unavailable-blocks.controller';
 @Module({
   controllers: [UnavailableBlocksController],
   providers: [UnavailableBlocksService],
+  exports: [UnavailableBlocksService],
 })
 export class UnavailableBlocksModule {}

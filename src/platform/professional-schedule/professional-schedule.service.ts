@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { merge } from 'lodash';
@@ -41,6 +42,7 @@ export class ProfessionalScheduleService extends BaseTenantService<ProfessionalS
     // Validar bloques de tiempo si es CUSTOM_BLOCKS
     if (createDto.schedule) {
       this.validateTimeBlocks(createDto.schedule);
+      this.validateBusinessRules(createDto.schedule);
     }
 
     return this.create(createDto);
@@ -58,10 +60,17 @@ export class ProfessionalScheduleService extends BaseTenantService<ProfessionalS
     // Validar bloques de tiempo si se está actualizando el horario
     if (updateDto.schedule) {
       this.validateTimeBlocks(updateDto.schedule);
+      this.validateBusinessRules(updateDto.schedule);
     }
 
     // Merge de datos
     const mergedData = merge({}, currentSchedule.toObject(), updateDto);
+
+    // Validar el horario completo después del merge
+    if (mergedData.schedule) {
+      this.validateTimeBlocks(mergedData.schedule);
+      this.validateBusinessRules(mergedData.schedule);
+    }
 
     const updatedSchedule =
       await this.professionalScheduleModel.findByIdAndUpdate(id, mergedData, {
@@ -130,12 +139,37 @@ export class ProfessionalScheduleService extends BaseTenantService<ProfessionalS
       return daySchedule.blocks || [];
     }
 
-    // Para FULL_TIME, necesitarías obtener el horario de la empresa
-    // Esto requeriría inyectar el CompaniesService o hacer una consulta
-    // Por ahora retorno un horario por defecto
+    // Para FULL_TIME, retornar horario por defecto de empresa
     return [{ start: '09:00', end: '18:00' }];
   }
 
+  async validateProfessionalAvailability(
+    professionalId: string,
+    dayOfWeek: string,
+    startTime: string,
+    endTime: string,
+  ): Promise<boolean> {
+    const schedule = await this.findByProfessionalId(professionalId);
+    if (!schedule || !schedule.schedule[dayOfWeek]?.isWorking) {
+      return false;
+    }
+
+    const daySchedule = schedule.schedule[dayOfWeek];
+
+    if (daySchedule.type === ScheduleType.FULL_TIME) {
+      return true; // Disponible todo el día laboral
+    }
+
+    // Para CUSTOM_BLOCKS, verificar si el horario solicitado está dentro de algún bloque
+    const requestedStart = this.timeToMinutes(startTime);
+    const requestedEnd = this.timeToMinutes(endTime);
+
+    return daySchedule.blocks.some((block) => {
+      const blockStart = this.timeToMinutes(block.start);
+      const blockEnd = this.timeToMinutes(block.end);
+      return requestedStart >= blockStart && requestedEnd <= blockEnd;
+    });
+  }
   private validateTimeBlocks(schedule: any): void {
     const days = [
       'monday',
@@ -151,29 +185,37 @@ export class ProfessionalScheduleService extends BaseTenantService<ProfessionalS
       const daySchedule = schedule[day];
       if (
         daySchedule?.type === ScheduleType.CUSTOM_BLOCKS &&
-        daySchedule.blocks
+        daySchedule.blocks &&
+        daySchedule.blocks.length > 0
       ) {
+        // Validar formato de hora y orden
         daySchedule.blocks.forEach((block: any, index: number) => {
-          // Validar formato de hora
           if (
             !this.isValidTimeFormat(block.start) ||
             !this.isValidTimeFormat(block.end)
           ) {
-            throw new Error(`Invalid time format in ${day} block ${index + 1}`);
+            throw new BadRequestException(
+              `Invalid time format in ${day} block ${index + 1}`,
+            );
           }
 
-          // Validar que start sea menor que end
           if (
             this.timeToMinutes(block.start) >= this.timeToMinutes(block.end)
           ) {
-            throw new Error(
+            throw new BadRequestException(
               `Start time must be before end time in ${day} block ${index + 1}`,
             );
           }
         });
 
-        // Validar que no haya solapamientos
+        // Validar solapamientos
         this.validateNoOverlappingBlocks(daySchedule.blocks, day);
+
+        // Validar duración mínima
+        this.validateMinimumServiceTime(daySchedule.blocks);
+
+        // Validar horario de negocio
+        this.validateBusinessHours(daySchedule.blocks);
       }
     });
   }
@@ -213,6 +255,21 @@ export class ProfessionalScheduleService extends BaseTenantService<ProfessionalS
       'sunday',
     ];
 
+    // Validar que al menos haya un día laboral
+    const workingDays = days.filter((day) => schedule[day]?.isWorking);
+    if (workingDays.length === 0) {
+      throw new BadRequestException(
+        'At least one working day must be configured',
+      );
+    }
+
+    // Validar límite máximo de días laborales (opcional)
+    if (workingDays.length > 6) {
+      throw new BadRequestException(
+        'Cannot have more than 6 working days per week',
+      );
+    }
+
     days.forEach((day) => {
       const daySchedule = schedule[day];
       if (!daySchedule) return;
@@ -221,8 +278,15 @@ export class ProfessionalScheduleService extends BaseTenantService<ProfessionalS
       if (daySchedule.isWorking) {
         if (daySchedule.type === ScheduleType.CUSTOM_BLOCKS) {
           if (!daySchedule.blocks || daySchedule.blocks.length === 0) {
-            throw new Error(
+            throw new BadRequestException(
               `Working day ${day} with CUSTOM_BLOCKS must have at least one time block`,
+            );
+          }
+
+          // Validar máximo de bloques por día
+          if (daySchedule.blocks.length > 10) {
+            throw new BadRequestException(
+              `Maximum 10 time blocks allowed per day for ${day}`,
             );
           }
         }
