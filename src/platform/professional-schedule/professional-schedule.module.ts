@@ -5,5 +5,6 @@ import { ProfessionalScheduleController } from './professional-schedule.controll
 @Module({
   controllers: [ProfessionalScheduleController],
   providers: [ProfessionalScheduleService],
+  exports: [ProfessionalScheduleService],
 })
 export class ProfessionalScheduleModule {}
