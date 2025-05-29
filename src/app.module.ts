@@ -29,6 +29,7 @@ import { UnavailableBlockSchema } from './platform/unavailable-blocks/entities/u
 import { ProfessionalScheduleSchema } from './platform/professional-schedule/entities/professional-schedule.entity';
 import { ServiceSchema } from './platform/services/entities/service.entity';
 import { BookingSchema } from './platform/bookings/entities/booking.entity';
+import { ProfessionalServiceSchema } from './platform/services/entities/professional-service.entity';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { BookingSchema } from './platform/bookings/entities/booking.entity';
         { name: 'ProfessionalSchedule', schema: ProfessionalScheduleSchema },
         { name: 'Service', schema: ServiceSchema },
         { name: 'Booking', schema: BookingSchema },
+        { name: 'ProfessionalService', schema: ProfessionalServiceSchema },
         // Agregar más modelos aquí fácilmente
       ],
     }),
